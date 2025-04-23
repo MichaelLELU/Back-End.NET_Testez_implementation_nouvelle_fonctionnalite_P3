@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
+using System.Configuration;
 
 
 
@@ -18,11 +19,13 @@ namespace P3AddNewFunctionalityDotNetCore.Models.ViewModels
         public string Details { get; set; }
 
         [Required(ErrorMessage = "MissingPrice")]
+        [RegularExpression(@"^\d+(\.\d{1,2})?$", ErrorMessage = "PriceNotANumber")]
         [Range(0.01, double.MaxValue, ErrorMessage = "PriceNotGreaterThanZero")]
         public string Price { get; set; } 
 
         [Required(ErrorMessage = "MissingQuantity")]
-        [Range(1, int.MaxValue, ErrorMessage = "StockNotGreaterThanZero")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "QuantityNotAnInteger")]
+        [Range(1, int.MaxValue, ErrorMessage = "QuantityNotGreaterThanZero")]
         public string Stock { get; set; }
     }
 }
