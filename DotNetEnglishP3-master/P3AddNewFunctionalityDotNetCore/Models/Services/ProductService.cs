@@ -128,5 +128,10 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
 
             _productRepository.DeleteProduct(id);
         }
+
+        public List<string> CheckProductModelErrors(ProductViewModel product)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
