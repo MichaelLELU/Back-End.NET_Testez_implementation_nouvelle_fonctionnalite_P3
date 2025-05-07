@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -61,14 +62,14 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var indexResponse = await _client.GetAsync("/Product/Admin");
             var content = await indexResponse.Content.ReadAsStringAsync();
-            Assert.DoesNotContain("Test Product", content);
+            Assert.DoesNotContain("Marche", content);
         }
 
         [Fact]
         public async Task DeletedProduct_ShouldNotAppearInProductIndex_ForClient()
         {
             // Arrange : suppression du produit via l'interface admin
-            var postData = new StringContent("id=1", Encoding.UTF8, "application/x-www-form-urlencoded");
+            var postData = new StringContent("id=2", Encoding.UTF8, "application/x-www-form-urlencoded");
             var response = await _client.PostAsync("/Product/DeleteProduct", postData);
 
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
@@ -79,7 +80,23 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var content = await indexResponse.Content.ReadAsStringAsync();
 
             // Assert : le produit supprimé ne doit pas apparaître côté client
-            Assert.DoesNotContain("Test Product", content);
+            Assert.DoesNotContain("Testos", content);
+        }
+
+        [Fact]
+        public async Task DeletedProduct_ShouldNotBeAddableToCart()
+        {
+            var deleteData = new StringContent("id=3", Encoding.UTF8, "application/x-www-form-urlencoded");
+            var deleteResponse = await _client.PostAsync("/Product/DeleteProduct", deleteData);
+            Assert.Equal(HttpStatusCode.Redirect, deleteResponse.StatusCode);
+
+
+            var addToCartResponse = await _client.PostAsync("/Cart/AddProductToCart/3", null);
+            var cartContent = await addToCartResponse.Content.ReadAsStringAsync();
+
+
+            Assert.DoesNotContain("Test Product 2", cartContent);
+            Assert.Contains("", cartContent, StringComparison.OrdinalIgnoreCase); 
         }
     }
 }

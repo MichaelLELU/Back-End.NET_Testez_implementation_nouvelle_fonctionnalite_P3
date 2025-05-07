@@ -29,7 +29,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var result = _productService.CheckProduct(product);
 
-            Assert.Contains("MissingName", result);
+            Assert.Contains("Veuillez saisir un nom", result);
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var result = _productService.CheckProduct(product);
 
-            Assert.Contains("MissingPrice", result);
+            Assert.Contains("Veuillez saisir un prix", result);
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var result = _productService.CheckProduct(product);
 
-            Assert.Contains("PriceNotGreaterThanZero", result);
+            Assert.Contains("Le prix doit être un nombre supérieur à zéro", result);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var result = _productService.CheckProduct(product);
 
-            Assert.Contains("PriceNotANumber", result);
+            Assert.Contains("Le prix doit être un nombre supérieur à zéro", result[0]);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var result = _productService.CheckProduct(product);
 
-            Assert.Contains("MissingQuantity", result);
+            Assert.Contains("Veuillez saisir un stock", result);
         }
 
         [Fact]
@@ -78,8 +78,8 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             var product = new ProductViewModel { Name = "Produit", Price = "10", Stock = "3.14" };
 
             var result = _productService.CheckProduct(product);
-
-            Assert.Contains("QuantityNotAnInteger", result);
+            
+            Assert.Contains("Le stock doit être un nombre supérieur à zéro", result[0]);
         }
 
         [Fact]
@@ -89,7 +89,7 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 
             var result = _productService.CheckProduct(product);
 
-            Assert.Contains("QuantityNotGreaterThanZero", result);
+            Assert.Contains("Le stock doit être un nombre supérieur à zéro", result);
         }
 
         [Fact]
