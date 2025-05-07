@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
-using System.Configuration;
 
 
 
@@ -11,21 +10,35 @@ namespace P3AddNewFunctionalityDotNetCore.Models.ViewModels
         [BindNever]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "MissingName")]
+        [Required(
+            ErrorMessageResourceType = typeof(Resources.Models.Product), 
+           ErrorMessageResourceName = "ErrorMissingName")]
         public string Name { get; set; }
 
         public string Description { get; set; }
 
         public string Details { get; set; }
 
-        [Required(ErrorMessage = "MissingPrice")]
-        [RegularExpression(@"^\d+(\.\d{1,2})?$", ErrorMessage = "PriceNotANumber")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "PriceNotGreaterThanZero")]
-        public string Price { get; set; } 
+        [Required(
+            ErrorMessageResourceType = typeof(Resources.Models.Product),
+            ErrorMessageResourceName = "ErrorMissingPrice")]
+        [RegularExpression(@"^\d+(\.\d{1,2})?$",
+            ErrorMessageResourceType = typeof(Resources.Models.Product),
+            ErrorMessageResourceName = "ErrorPriceValue")]
+        [Range(0.01, double.MaxValue,
+            ErrorMessageResourceType = typeof(Resources.Models.Product),
+            ErrorMessageResourceName = "ErrorPriceValue")]
+        public string Price { get; set; }
 
-        [Required(ErrorMessage = "MissingQuantity")]
-        [RegularExpression(@"^\d+$", ErrorMessage = "QuantityNotAnInteger")]
-        [Range(1, int.MaxValue, ErrorMessage = "QuantityNotGreaterThanZero")]
+        [Required(
+            ErrorMessageResourceType = typeof(Resources.Models.Product),
+            ErrorMessageResourceName = "ErrorMissingStock")]
+        [RegularExpression(@"^\d+$",
+            ErrorMessageResourceType = typeof(Resources.Models.Product),
+            ErrorMessageResourceName = "ErrorStockValue")]
+        [Range(1, int.MaxValue,
+            ErrorMessageResourceType = typeof(Resources.Models.Product),
+            ErrorMessageResourceName = "ErrorStockValue")]
         public string Stock { get; set; }
     }
 }
