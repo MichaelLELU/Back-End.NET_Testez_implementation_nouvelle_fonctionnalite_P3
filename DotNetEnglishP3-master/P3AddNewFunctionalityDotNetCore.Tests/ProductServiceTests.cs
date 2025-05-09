@@ -22,6 +22,8 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             );
         }
 
+        // tests a executer en evironements FR
+        
         [Fact]
         public void CheckProduct_Should_ReturnMissingName_When_NameIsEmpty()
         {

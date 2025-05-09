@@ -10,10 +10,11 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
 {
     public class ProductIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
-
+        private readonly CustomWebApplicationFactory _factory;
         private readonly HttpClient _client;
         public ProductIntegrationTests(CustomWebApplicationFactory factory)
         {
+            _factory = factory;
             _client = factory.CreateClient(new WebApplicationFactoryClientOptions
             {
                 AllowAutoRedirect = false
@@ -23,80 +24,124 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         [Fact]
         public async Task Index_ShouldReturnSuccessAndContainProduct()
         {
+            // Arrange
+            _factory.ResetDatabase();
+
             // Act
             var response = await _client.GetAsync("/Product/Index");
 
             // Assert
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
-
-            Assert.Contains("Test Product", content);
+            Assert.Contains("Test Product", content); 
         }
+
 
         [Fact]
         public async Task Create_Post_ShouldCreateProduct_WhenAuthenticated()
         {
-            var postData = new StringContent("Name=NewProduct&Price=10&Stock=5&Description=Test&Details=Details", Encoding.UTF8, "application/x-www-form-urlencoded");
+            // Arrange
+            _factory.ResetDatabase();
+            var postData = new StringContent(
+                "Name=NewProduct&Price=10&Stock=5&Description=Test&Details=Details",
+                Encoding.UTF8,
+                "application/x-www-form-urlencoded"
+            );
+
+            // Act
             var response = await _client.PostAsync("/Product/Create", postData);
 
-
+            // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Contains("/Product/Admin", response.Headers.Location.ToString());
+            Assert.Contains("/Product/Admin", response.Headers.Location.ToString()); 
 
-            // Vérifie que le produit apparaît
+            // Act (accès à la liste admin)
             var indexResponse = await _client.GetAsync("/Product/Admin");
             var indexContent = await indexResponse.Content.ReadAsStringAsync();
+
+            // Assert (le produit apparaît bien dans la liste)
             Assert.Contains("NewProduct", indexContent);
         }
 
         [Fact]
         public async Task DeletedProduct_ShouldNotAppearInProductIndex()
         {
+            _factory.ResetDatabase();
+            // Arrange
             var postData = new StringContent("id=1", Encoding.UTF8, "application/x-www-form-urlencoded");
-
             var response = await _client.PostAsync("/Product/DeleteProduct", postData);
 
+            // Act
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Contains("/Product/Admin", response.Headers.Location.ToString());
 
-
+            // Assert
             var indexResponse = await _client.GetAsync("/Product/Admin");
             var content = await indexResponse.Content.ReadAsStringAsync();
-            Assert.DoesNotContain("Marche", content);
+            Assert.DoesNotContain("Dummy", content);
         }
 
         [Fact]
         public async Task DeletedProduct_ShouldNotAppearInProductIndex_ForClient()
         {
-            // Arrange : suppression du produit via l'interface admin
-            var postData = new StringContent("id=2", Encoding.UTF8, "application/x-www-form-urlencoded");
+            // Arrange
+            _factory.ResetDatabase();
+            var postData = new StringContent("id=1", Encoding.UTF8, "application/x-www-form-urlencoded");
+
+            // Act
             var response = await _client.PostAsync("/Product/DeleteProduct", postData);
 
+            // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Contains("/Product/Admin", response.Headers.Location.ToString());
 
-            // Act : vérification que le produit ne s'affiche plus dans la vue publique
+            // Act (accès à la liste utilisateur)
             var indexResponse = await _client.GetAsync("/Product/Index");
             var content = await indexResponse.Content.ReadAsStringAsync();
 
-            // Assert : le produit supprimé ne doit pas apparaître côté client
-            Assert.DoesNotContain("Testos", content);
+            // Assert (le produit n'apparait pas dans la liste)
+            Assert.DoesNotContain("Dummy", content);
         }
 
         [Fact]
         public async Task DeletedProduct_ShouldNotBeAddableToCart()
         {
-            var deleteData = new StringContent("id=3", Encoding.UTF8, "application/x-www-form-urlencoded");
+            // Arrange
+            _factory.ResetDatabase();
+
+            // Act (ajouter au panier )
+            var initialAddResponse = await _client.PostAsync("/Cart/AddToCart/1", null);
+
+            // Assert (ajout réussi)
+            Assert.Equal(HttpStatusCode.Redirect, initialAddResponse.StatusCode);
+
+            // Act (vérifier contenu du panier)
+            var cartResponse = await _client.GetAsync("/Cart");
+            var initialCartContent = await cartResponse.Content.ReadAsStringAsync();
+
+            // Assert (le produit est bien dans le panier)
+            Assert.Contains("Dummy", initialCartContent);
+
+            // Act (supprimer le produit)
+            var deleteData = new StringContent("id=1", Encoding.UTF8, "application/x-www-form-urlencoded");
             var deleteResponse = await _client.PostAsync("/Product/DeleteProduct", deleteData);
+
+            // Assert (suppression redirige correctement)
             Assert.Equal(HttpStatusCode.Redirect, deleteResponse.StatusCode);
 
+            // Act (essayer de réajouter après suppression)
+            var addAfterDeleteResponse = await _client.PostAsync("/Cart/AddToCart/1", null);
 
-            var addToCartResponse = await _client.PostAsync("/Cart/AddProductToCart/3", null);
-            var cartContent = await addToCartResponse.Content.ReadAsStringAsync();
+            // Assert (toujours redirection — mais pas de réelle ajout)
+            Assert.Equal(HttpStatusCode.Redirect, addAfterDeleteResponse.StatusCode);
 
+            // Act (vérifier le panier après suppression)
+            var cartAfterDeleteResponse = await _client.GetAsync("/Cart");
+            var cartContentAfterDelete = await cartAfterDeleteResponse.Content.ReadAsStringAsync();
 
-            Assert.DoesNotContain("Test Product 2", cartContent);
-            Assert.Contains("", cartContent, StringComparison.OrdinalIgnoreCase); 
+            // Assert (le produit n'est plus dans le panier)
+            Assert.DoesNotContain("Dummy", cartContentAfterDelete);
         }
+
     }
 }
