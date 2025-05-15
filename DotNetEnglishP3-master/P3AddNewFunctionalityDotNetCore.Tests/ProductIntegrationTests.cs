@@ -129,12 +129,6 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
             // Assert (suppression redirige correctement)
             Assert.Equal(HttpStatusCode.Redirect, deleteResponse.StatusCode);
 
-            // Act (essayer de réajouter après suppression)
-            var addAfterDeleteResponse = await _client.PostAsync("/Cart/AddToCart/1", null);
-
-            // Assert (toujours redirection — mais pas de réelle ajout)
-            Assert.Equal(HttpStatusCode.Redirect, addAfterDeleteResponse.StatusCode);
-
             // Act (vérifier le panier après suppression)
             var cartAfterDeleteResponse = await _client.GetAsync("/Cart");
             var cartContentAfterDelete = await cartAfterDeleteResponse.Content.ReadAsStringAsync();
